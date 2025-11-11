@@ -27,6 +27,9 @@ public class PlayerController : MonoBehaviour
     [Header("Camera")]
     public Camera m_Camera;
 
+    [Header("Player")]
+    public GameObject m_Player;
+
 
     [Header("Input")]
     public KeyCode m_LeftKeyCode = KeyCode.A;
@@ -87,27 +90,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
 
-
-
-        /*PlayerController l_Player = GameManager.GetGameManager().GetPlayer();
-        if (l_Player != null) // si ya existe un player lo encontramos y destruimos
-        {
-            l_Player.m_CharacterController.enabled = false; // deshabilitamos el character controller para evitar problemas al destruir el objeto
-            l_Player.transform.position = transform.position; // colocamos el nuevo player en la posicion del antiguo
-            l_Player.transform.rotation = transform.rotation; // colocamos el nuevo player en la rotacion del antiguo
-            l_Player.m_CharacterController.enabled = true; // habilitamos el character controller
-            l_Player.m_StartPosition = transform.position;
-            l_Player.m_StartRotation = transform.rotation;
-            GameObject.Destroy(gameObject); // destruimos el objeto actual  
-            return;
-        }
         m_StartPosition = transform.position;
         m_StartRotation = transform.rotation;
-
-        DontDestroyOnLoad(gameObject); // hace que el objeto no se destruya al cargar una nueva escena
-        GameManager.GetGameManager().SetPlayer(this); // asignamos el player al game manager
-        Cursor.lockState = CursorLockMode.Locked; */
-        
         UnityEngine.Cursor.lockState = CursorLockMode.Locked;
     }
     void Update()
@@ -181,11 +165,19 @@ public class PlayerController : MonoBehaviour
             m_BluePortal.GetComponent<Collider>().enabled = true;
             Shoot(m_BluePortal);
         }
-        else if (CanShoot() && Input.GetMouseButton(m_OrangeShootMouseButton))
+        if (Input.GetMouseButton(m_OrangeShootMouseButton) && CanShoot())
         {
+            Debug.Log("Show orange portal");
+            ShowPortal(m_OrangePortal);
+
+        }
+        if (Input.GetMouseButtonUp(m_OrangeShootMouseButton))
+        {
+            Debug.Log("Shoot orange");
             m_OrangePortal.GetComponent<Collider>().enabled = true;
             Shoot(m_OrangePortal);
         }
+        
             
         //m_Animation.Play(m_CantShootAnimationClip.name);
 
