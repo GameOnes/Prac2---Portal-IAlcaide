@@ -160,7 +160,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonUp(m_BlueShootMouseButton))
         {
             Debug.Log("Shoot blue");
-           // m_BluePrev.SetActive(false);
+            m_BluePrev.SetActive(false);
             m_BluePortal.GetComponent<Collider>().enabled = true;
             Shoot(m_BluePortal);
         }
@@ -173,6 +173,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonUp(m_OrangeShootMouseButton))
         {
             Debug.Log("Shoot orange");
+            m_OrangePrev.SetActive(false);
             m_OrangePortal.GetComponent<Collider>().enabled = true;
             Shoot(m_OrangePortal);
         }
