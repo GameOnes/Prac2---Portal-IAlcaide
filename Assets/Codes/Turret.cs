@@ -13,10 +13,6 @@ public class Turret : MonoBehaviour
 
     private void Update()
     {
-        if(m_LaserLineRenderer==null)
-        {
-            return;
-        }
 
         float l_DotAngle = Vector3.Dot(transform.up, Vector3.up);
         if ((l_DotAngle < Mathf.Cos(m_maxALifeAngle * Mathf.Deg2Rad)))
@@ -38,18 +34,13 @@ public class Turret : MonoBehaviour
 
                 PlayerController l_Player = l_RayCastHit.collider.GetComponentInParent<PlayerController>();
                 if (l_Player != null) { l_Player.Restart(); }
-                else
-                {
-                    RefrectualCube l_RefrectualCube = l_RayCastHit.collider.GetComponentInParent<RefrectualCube>();
-                    if (l_RefrectualCube != null) { l_RefrectualCube.Reflect(); }
-                    else
-                    {
-                        Turret l_Turret = l_RayCastHit.collider.GetComponentInParent<Turret>();
-                        if (l_Turret != null) { l_Turret.Die(); }                
 
-                    }
-                }          
-                
+                RefrectualCube l_RefrectualCube = l_RayCastHit.collider.GetComponentInParent<RefrectualCube>();
+                if (l_RefrectualCube != null) { l_RefrectualCube.Reflect(); }
+
+                Turret l_Turret = l_RayCastHit.collider.GetComponent<Turret>();
+                if (l_Turret != null) { l_Turret.Die(); }
+
             }
             Vector3 l_Position = new Vector3(0, 0, l_Distance);
             m_LaserLineRenderer.SetPosition(1, l_Position);

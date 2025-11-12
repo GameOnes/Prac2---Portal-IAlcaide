@@ -160,7 +160,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonUp(m_BlueShootMouseButton))
         {
             Debug.Log("Shoot blue");
-            m_BluePrev.SetActive(false);
+           // m_BluePrev.SetActive(false);
             m_BluePortal.GetComponent<Collider>().enabled = true;
             Shoot(m_BluePortal);
         }
@@ -191,13 +191,29 @@ public class PlayerController : MonoBehaviour
     {
         return true;
     }
-    void ShowPortal(Portal _portal)
+    void ShowPortal(Portal portalPreview)
     {
+        Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_ShootMaxDistance, m_ShootLayerMask.value))
+        {
+            if (l_RaycastHit.collider.CompareTag("DrawableWall"))
+            {
+                Vector3 l_SpawnPortalPos = l_RaycastHit.point + l_RaycastHit.normal * 0.01f; // desplazamos un poco el portal para que no este pegado a la pared
+                if (portalPreview.IsValidPosition(l_SpawnPortalPos, l_RaycastHit.normal)) // verificamos si la posicion es valida para el portal
+                {
+                    Debug.Log("Spawn Portal");
+                    //SetShootAnimation();
+                    portalPreview.gameObject.SetActive(true);
+                }
+                else
+                {
+                    Debug.Log("Can't Spawn Portal");
+                    //CantShootAnimation();
+                    portalPreview.gameObject.SetActive(false);
+                }
 
-
-        m_BluePrev.transform.position = _portal.transform.position;
-        m_BluePrev.transform.rotation = _portal.transform.rotation;
-        m_BluePrev.SetActive(true);
+            }
+        }  
 
     }
 
