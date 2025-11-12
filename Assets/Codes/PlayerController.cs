@@ -27,9 +27,6 @@ public class PlayerController : MonoBehaviour
     [Header("Camera")]
     public Camera m_Camera;
 
-    [Header("Player")]
-    public GameObject m_Player;
-
 
     [Header("Input")]
     public KeyCode m_LeftKeyCode = KeyCode.A;
@@ -64,7 +61,8 @@ public class PlayerController : MonoBehaviour
     [Header("Portals")]
     public Portal m_BluePortal;
     public Portal m_OrangePortal;
-
+    public GameObject m_BluePrev;
+    public GameObject m_OrangePrev;
 
     [Header("Time")]
     public float m_TimeToShoot = 0.5f;
@@ -162,6 +160,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetMouseButtonUp(m_BlueShootMouseButton))
         {
             Debug.Log("Shoot blue");
+            m_BluePrev.SetActive(false);
             m_BluePortal.GetComponent<Collider>().enabled = true;
             Shoot(m_BluePortal);
         }
@@ -194,8 +193,12 @@ public class PlayerController : MonoBehaviour
     }
     void ShowPortal(Portal _portal)
     {
-        
-        m_BluePortal.gameObject.SetActive(true);
+
+
+        m_BluePrev.transform.position = _portal.transform.position;
+        m_BluePrev.transform.rotation = _portal.transform.rotation;
+        m_BluePrev.SetActive(true);
+
     }
 
     bool CanShoot()
@@ -258,8 +261,6 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    // animation es más comodo para un perosnaje 3d porque puedes hacerlo directamente aaqui
-    //mientras que con animator tienes que crear un controlador de animacion y es mas pesado, mas util para crear animaciones de por ejemplo un menu
     //void SetIdleAnimation()
     //{
     //    m_Animation.CrossFade(m_IdleAnimationClip.name, 0.1f);
@@ -276,38 +277,7 @@ public class PlayerController : MonoBehaviour
 
     //}
 
-
-    /*
-    public void GetDamage(float realDamage)
-    {
-        Debug.Log("AUCH!");
-        if (m_CurrentShield > 0)
-        {
-            m_CurrentHealth = m_CurrentHealth - (realDamage * 0.25f);
-            m_CurrentShield = m_CurrentShield - (realDamage * 0.75f);
-
-            /*if (m_CurrentShield < 0)
-            {
-                float extradmg = -m_CurrentShield;
-                m_CurrentShield = 0;
-                m_CurrentHealth -= m_CurrentHealth + extradmg;
-                Debug.Log(extradmg);}
-        }
-        else
-        {
-            Debug.Log("no hay escudo");
-            m_CurrentShield = 0;
-            m_CurrentHealth -= realDamage;
-        }
-        Vector3 worldPos = (m_Anchor != null) ? m_Anchor.position : (transform.position + Vector3.up * 2.0f);
-        m_CurrentHealth = Mathf.Clamp(m_CurrentHealth, 0, m_MaxHealth); // nos permite verificar que la vida no sea menor que 0 ni mayor que la vida maxima
-        m_CurrentShield = Mathf.Clamp(m_CurrentShield, 0, m_MaxShield); // nos permite verificar que el escudo no sea menor que 0 ni mayor que el escudo maximo
-
-
-        lifeBar.Show(worldPos, m_CurrentHealth / m_MaxHealth);
-
-
-    }*/
+  
 
 
     void AttachObject()
@@ -318,9 +288,13 @@ public class PlayerController : MonoBehaviour
             Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
             if(Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_ShootMaxDistance, m_ValidAttachObjectLayerMask.value))
             {
-                if(l_RaycastHit.collider.CompareTag("Cube"))
+                //if(l_RaycastHit.collider.CompareTag("Cube"))
+                //{
+                //    AttachObject(l_RaycastHit.rigidbody);
+                //}
+                if((m_ValidAttachObjectLayerMask.value & (1 << l_RaycastHit.collider.gameObject.layer)) != 0) 
                 {
-                    AttachObject(l_RaycastHit.rigidbody);
+                        AttachObject(l_RaycastHit.rigidbody);
                 }
             }
         }
@@ -395,6 +369,7 @@ public class PlayerController : MonoBehaviour
 
     public void Restart()
     {
+        //Fade();
         m_CharacterController.enabled = false;
         transform.position = m_StartPosition;
         transform.rotation = m_StartRotation;

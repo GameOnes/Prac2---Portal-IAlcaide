@@ -6,8 +6,6 @@ public class RefrectualCube : MonoBehaviour
     public float m_MaxDistance = 50.0f;
     public LayerMask m_LayerMask;
     bool m_IsReflectingLaser = false;
-
-
     private void Start()
     {
         m_LineRenderer.gameObject.SetActive(false);
