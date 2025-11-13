@@ -61,11 +61,11 @@ public class PlayerController : MonoBehaviour
     Vector3 m_MovementDirection;
 
     [Header("Portal Size")]
-    public float portalSize;
-    public float maxPortalSize;
-    public float minPortalSize;
+    public float m_CurrentPortalSize;
+    public float m_MaxPortalSize;
+    public float m_MinPortalSize;
 
-    private float currentPortalSize;
+    private float m_ScrollingValue;
 
     [Header("Portals")]
     public Portal m_BluePortal;
@@ -165,18 +165,15 @@ public class PlayerController : MonoBehaviour
         else if (m_VerticalSpeed > 0.0f && (l_CollisionFlags & CollisionFlags.Above) != 0) //si estoy subiendo y colision con un techo
             m_VerticalSpeed = 0.0f;
 
-        
+
         if ( Input.GetMouseButton(m_BlueShootMouseButton) && CanShoot())
-        {
-            if (Input.GetKey(m_ChangePortalSizeKeyCode))
-            {
-                SizePortal();
-            }
+        { 
             if(m_PortalIsActive && m_BluePortal != null)
             {
                 m_BluePortal.gameObject.SetActive(false);
                 m_PortalIsActive = false;
                 m_PortalMesh.material = m_Blue;
+              
             }
             ShowDummyPortal(m_DummyPortal);
         }
@@ -188,15 +185,14 @@ public class PlayerController : MonoBehaviour
         }
         if(Input.GetMouseButton(m_OrangeShootMouseButton)&& CanShoot())
         {
-            if (Input.GetKey(m_ChangePortalSizeKeyCode))
-            {
-                SizePortal();
-            }
+            
+            
             if (m_PortalIsActive && m_BluePortal != null)
             {
                 m_OrangePortal.gameObject.SetActive(false);
                 m_PortalIsActive = false;
                 m_PortalMesh.material = m_Orange;
+                
             }
             ShowDummyPortal(m_DummyPortal);
         }
@@ -225,25 +221,38 @@ public class PlayerController : MonoBehaviour
  
     void ShowDummyPortal(Portal _DummyPortal)
     {
+        if (m_DummyPortal == null) return;
+
+        SizePortal();
+
         Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_ShootMaxDistance, m_ShootLayerMask.value))
         {
             if (l_RaycastHit.collider.CompareTag("DrawableWall"))
             {
-                Vector3 l_SpawnPortalPos = l_RaycastHit.point + l_RaycastHit.normal * 0.01f; 
-                if (_DummyPortal.IsValidPosition(l_SpawnPortalPos, l_RaycastHit.normal)) 
-                {
-                    _DummyPortal.gameObject.SetActive(true);
-                }
-                else
-                {
-                    m_PortalMesh.material = m_WrongPrevPortalMaterial;
-                    _DummyPortal.gameObject.SetActive(true);
-                }
-                
+                Vector3 l_SpawnPortalPos = l_RaycastHit.point + l_RaycastHit.normal * 0.01f;
+                _DummyPortal.transform.position = l_SpawnPortalPos;
+                _DummyPortal.transform.rotation = Quaternion.LookRotation(l_RaycastHit.normal);
 
+                bool l_IsValid = _DummyPortal.IsValidPosition(l_SpawnPortalPos, l_RaycastHit.normal);
+
+                if (!_DummyPortal.gameObject.activeSelf)
+                {
+                    _DummyPortal.gameObject.SetActive(true);
+                }
+
+                Vector3 targetScale = Vector3.one * m_CurrentPortalSize;
+                _DummyPortal.transform.localScale = Vector3.Lerp(_DummyPortal.transform.localScale, targetScale, Time.deltaTime);
+                
+                if (!l_IsValid && m_PortalMesh != null) { m_PortalMesh.material = m_WrongPrevPortalMaterial; }
+                   
             }
             
+        
+        }
+        else
+        {
+            _DummyPortal.gameObject.SetActive(false);
         }
     }
 
@@ -251,13 +260,15 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKey(m_ChangePortalSizeKeyCode))
         {
-            portalSize = Input.GetAxis("Mouse ScrollWheel");
-            portalSize += currentPortalSize;
+            m_ScrollingValue = Input.GetAxis("Mouse ScrollWheel");
+            if (Mathf.Abs(m_ScrollingValue) > 0f) 
+                m_CurrentPortalSize += m_ScrollingValue;
         }
             
-        portalSize = Mathf.Clamp(portalSize, minPortalSize, maxPortalSize); 
-        currentPortalSize = portalSize;
+        m_CurrentPortalSize = Mathf.Clamp(m_CurrentPortalSize, m_MinPortalSize, m_MaxPortalSize); 
+        
     }
+
     bool CanShoot()
     {
         return m_currentTime >= m_TimeToShoot;
@@ -265,10 +276,10 @@ public class PlayerController : MonoBehaviour
    
     void Shoot(Portal _Portal)
     {
-        
 
         m_currentTime = 0f;
-        
+        SizePortal();
+
         Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_ShootMaxDistance, m_ShootLayerMask.value))
         {
@@ -279,14 +290,13 @@ public class PlayerController : MonoBehaviour
                 {
                     _Portal.gameObject.SetActive(true);
                     m_PortalIsActive = true;
+                    _Portal.transform.localScale= new Vector3 (m_CurrentPortalSize, m_CurrentPortalSize, m_CurrentPortalSize);
                 }
                 else
                 {
                     _Portal.gameObject.SetActive(false);
                     m_PortalIsActive = false;
                 }
-
-
 
 
             }
@@ -311,6 +321,7 @@ public class PlayerController : MonoBehaviour
         m_CharacterController.enabled = false; // deshabilitamos el character controller para evitar problemas al mover el objeto
         transform.position = l_WorldPosition;
         transform.rotation = Quaternion.LookRotation(l_WorldCamForward);
+        transform.localScale = Vector3.one * (_portal.m_MirrorPortal.transform.localScale.x / _portal.transform.localScale.x) * transform.localScale.x;
         m_Yaw = transform.rotation.eulerAngles.y;
         m_CharacterController.enabled = true; // habilitamos el character controller
 
@@ -377,14 +388,14 @@ public class PlayerController : MonoBehaviour
             m_AttachedObjectRb.MovePosition(l_Position);
             m_AttachedObjectRb.MoveRotation(l_Rotation);
 
-            if(l_Pct == 1.0f) //l_Pct = es literalmente el porcentaje de tiempo que ha pasado
+            if(l_Pct == 1.0f) 
             {
                 m_AttachingObject = false;
                 m_AttachedObject = true;
                 m_AttachedObjectRb.transform.SetParent(m_GripTransform);
                 m_AttachedObjectRb.transform.localPosition = Vector3.zero;
                 m_AttachedObjectRb.transform.localRotation = Quaternion.identity;
-                m_AttachedObjectRb.isKinematic = true; // desactivamos la fisica para que no se caiga
+                m_AttachedObjectRb.isKinematic = true; 
             }
         }
         if (Input.GetMouseButtonDown(0)) { ThrowObject(m_ThrowForce); }
@@ -406,7 +417,7 @@ public class PlayerController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
 
-        if (other.CompareTag("Portal")) // el usa un comparetag pero nunca me funciona 
+        if (other.CompareTag("Portal")) 
         {
             Portal l_Portal = other.GetComponent<Portal>();
             if (CanTeleport(l_Portal)) 
@@ -417,8 +428,8 @@ public class PlayerController : MonoBehaviour
     }
     bool CanTeleport(Portal l_Portal)
     {
-       float l_Dotvalue = Vector3.Dot(l_Portal.transform.forward,-m_MovementDirection); // esto nos da el angulo entre la direccion del portal y la direccion del jugador
-        return l_Dotvalue > Mathf.Cos(m_MaxAngleToTeleport*Mathf.Deg2Rad); // esto nos dice si el angulo es menor que el angulo maximo permitido y devuelve true o false
+       float l_Dotvalue = Vector3.Dot(l_Portal.transform.forward,-m_MovementDirection); 
+        return l_Dotvalue > Mathf.Cos(m_MaxAngleToTeleport*Mathf.Deg2Rad); 
     }
 
 

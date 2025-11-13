@@ -58,7 +58,7 @@ Transform:
   m_GameObject: {fileID: 6419671313750331949}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.347, y: 0.229, z: 0.45}
+  m_LocalPosition: {x: -0.258, y: 0.229, z: 0.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -114,7 +114,7 @@ LineRenderer:
   m_SortingOrder: 0
   m_Positions:
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 5}
+  - {x: 0, y: 0, z: 50}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
@@ -292,15 +292,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0a19a4de7d289d4dbca1576114cc135, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Turret
-  m_Turret:
-  - {fileID: 0}
-  - {fileID: 0}
-  m_LaserLineRenderer: {fileID: 1535363780602959431}
+  m_MaxAlifeAngle: 15
+  m_DeathForceThreshold: 5
+  m_LineRenderer: {fileID: 1535363780602959431}
   m_MaxDistance: 50
   m_LayerMask:
     serializedVersion: 2
-    m_Bits: 1
-  m_maxALifeAngle: 45
+    m_Bits: 4294967295
+  m_PortalDistance: 1.5
+  m_MaxAngleToTeleport: 70
 --- !u!65 &6663153871073929580
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -317,7 +317,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}

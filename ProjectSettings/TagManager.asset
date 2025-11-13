@@ -9,6 +9,7 @@ TagManager:
   - DrawableWall
   - Turret
   - DefaultWalls
+  - RefractionCube
   layers:
   - Default
   - TransparentFX
