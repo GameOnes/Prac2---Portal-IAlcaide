@@ -35,9 +35,11 @@ public class PlayerController : MonoBehaviour
     public KeyCode m_DownKeyCode = KeyCode.S;
     public KeyCode m_JumpKeyCode = KeyCode.Space;
     public KeyCode m_RunKeyCode = KeyCode.LeftShift;
-    public KeyCode m_GrabKeyCode = KeyCode.E;   
+    public KeyCode m_GrabKeyCode = KeyCode.E;
+    public KeyCode m_ChangePortalSizeKeyCode = KeyCode.Mouse2;
     public int m_BlueShootMouseButton = 0;
     public int m_OrangeShootMouseButton = 1;
+    
 
     [Header("Debug Input")]
     public KeyCode m_DebugLockAngleKeyCode = KeyCode.I;
@@ -58,12 +60,23 @@ public class PlayerController : MonoBehaviour
     public float m_MaxAngleToTeleport = 75.0f;
     Vector3 m_MovementDirection;
 
+    [Header("Portal Size")]
+    public float portalSize;
+    public float maxPortalSize;
+    public float minPortalSize;
+
+    private float currentPortalSize;
+
     [Header("Portals")]
     public Portal m_BluePortal;
     public Portal m_OrangePortal;
-    public GameObject m_BluePrev;
-    public GameObject m_OrangePrev;
+    public Portal m_DummyPortal;
+    public MeshRenderer m_PortalMesh;  
+    public Material m_Blue;
+    public Material m_Orange;
+    public Material m_WrongPrevPortalMaterial;
 
+    private bool m_PortalIsActive = false;
     [Header("Time")]
     public float m_TimeToShoot = 0.5f;
     private float m_currentTime = 0f;
@@ -148,33 +161,49 @@ public class PlayerController : MonoBehaviour
             if (Input.GetKeyDown(m_JumpKeyCode))
                 m_VerticalSpeed = m_JumpSpeed;
         }
+
         else if (m_VerticalSpeed > 0.0f && (l_CollisionFlags & CollisionFlags.Above) != 0) //si estoy subiendo y colision con un techo
             m_VerticalSpeed = 0.0f;
 
+        
         if ( Input.GetMouseButton(m_BlueShootMouseButton) && CanShoot())
         {
-            Debug.Log("Show blue portal");
-            ShowPortal(m_BluePortal);
-
+            if (Input.GetKey(m_ChangePortalSizeKeyCode))
+            {
+                SizePortal();
+            }
+            if(m_PortalIsActive && m_BluePortal != null)
+            {
+                m_BluePortal.gameObject.SetActive(false);
+                m_PortalIsActive = false;
+                m_PortalMesh.material = m_Blue;
+            }
+            ShowDummyPortal(m_DummyPortal);
         }
+
         if (Input.GetMouseButtonUp(m_BlueShootMouseButton))
         {
-            Debug.Log("Shoot blue");
-            m_BluePrev.SetActive(false);
-            m_BluePortal.GetComponent<Collider>().enabled = true;
+            m_DummyPortal.gameObject.SetActive(false);
             Shoot(m_BluePortal);
         }
-        if (Input.GetMouseButton(m_OrangeShootMouseButton) && CanShoot())
+        if(Input.GetMouseButton(m_OrangeShootMouseButton)&& CanShoot())
         {
-            Debug.Log("Show orange portal");
-            ShowPortal(m_OrangePortal);
-
+            if (Input.GetKey(m_ChangePortalSizeKeyCode))
+            {
+                SizePortal();
+            }
+            if (m_PortalIsActive && m_BluePortal != null)
+            {
+                m_OrangePortal.gameObject.SetActive(false);
+                m_PortalIsActive = false;
+                m_PortalMesh.material = m_Orange;
+            }
+            ShowDummyPortal(m_DummyPortal);
         }
+       
         if (Input.GetMouseButtonUp(m_OrangeShootMouseButton))
         {
-            Debug.Log("Shoot orange");
-            m_OrangePrev.SetActive(false);
-            m_OrangePortal.GetComponent<Collider>().enabled = true;
+            m_DummyPortal.gameObject.SetActive(false);
             Shoot(m_OrangePortal);
         }
         
@@ -188,36 +217,47 @@ public class PlayerController : MonoBehaviour
         if(m_AttachedObjectRb != null)
             UpdateAttachedObject();
     }
+
     bool CanAttachObject()
     {
         return true;
     }
-    void ShowPortal(Portal portalPreview)
+ 
+    void ShowDummyPortal(Portal _DummyPortal)
     {
         Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_ShootMaxDistance, m_ShootLayerMask.value))
         {
             if (l_RaycastHit.collider.CompareTag("DrawableWall"))
             {
-                Vector3 l_SpawnPortalPos = l_RaycastHit.point + l_RaycastHit.normal * 0.01f; // desplazamos un poco el portal para que no este pegado a la pared
-                if (portalPreview.IsValidPosition(l_SpawnPortalPos, l_RaycastHit.normal)) // verificamos si la posicion es valida para el portal
+                Vector3 l_SpawnPortalPos = l_RaycastHit.point + l_RaycastHit.normal * 0.01f; 
+                if (_DummyPortal.IsValidPosition(l_SpawnPortalPos, l_RaycastHit.normal)) 
                 {
-                    Debug.Log("Spawn Portal");
-                    //SetShootAnimation();
-                    portalPreview.gameObject.SetActive(true);
+                    _DummyPortal.gameObject.SetActive(true);
                 }
                 else
                 {
-                    Debug.Log("Can't Spawn Portal");
-                    //CantShootAnimation();
-                    portalPreview.gameObject.SetActive(false);
+                    m_PortalMesh.material = m_WrongPrevPortalMaterial;
+                    _DummyPortal.gameObject.SetActive(true);
                 }
+                
 
             }
-        }  
-
+            
+        }
     }
 
+    void SizePortal()
+    {
+        if (Input.GetKey(m_ChangePortalSizeKeyCode))
+        {
+            portalSize = Input.GetAxis("Mouse ScrollWheel");
+            portalSize += currentPortalSize;
+        }
+            
+        portalSize = Mathf.Clamp(portalSize, minPortalSize, maxPortalSize); 
+        currentPortalSize = portalSize;
+    }
     bool CanShoot()
     {
         return m_currentTime >= m_TimeToShoot;
@@ -234,18 +274,16 @@ public class PlayerController : MonoBehaviour
         {
             if (l_RaycastHit.collider.CompareTag("DrawableWall"))
             {
-                Vector3 l_SpawnPortalPos= l_RaycastHit.point + l_RaycastHit.normal * 0.01f; // desplazamos un poco el portal para que no este pegado a la pared
-                if (_Portal.IsValidPosition(l_SpawnPortalPos, l_RaycastHit.normal)) // verificamos si la posicion es valida para el portal
+                Vector3 l_SpawnPortalPos= l_RaycastHit.point + l_RaycastHit.normal * 0.01f; 
+                if (_Portal.IsValidPosition(l_SpawnPortalPos, l_RaycastHit.normal)) 
                 {
-                    Debug.Log("Spawn Portal");
-                    //SetShootAnimation();
                     _Portal.gameObject.SetActive(true);
+                    m_PortalIsActive = true;
                 }
                 else
                 {
-                    Debug.Log("Can't Spawn Portal");
-                    //CantShootAnimation();
                     _Portal.gameObject.SetActive(false);
+                    m_PortalIsActive = false;
                 }
 
 

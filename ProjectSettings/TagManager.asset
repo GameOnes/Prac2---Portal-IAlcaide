@@ -8,6 +8,7 @@ TagManager:
   - Portal
   - DrawableWall
   - Turret
+  - DefaultWalls
   layers:
   - Default
   - TransparentFX

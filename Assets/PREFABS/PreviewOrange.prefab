@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 417b6c3ad6fc7784c97a0f9817c65d74, type: 2}
+  - {fileID: 2100000, guid: 5c443246b8844b64e8c0cfed776878a3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -212,12 +212,12 @@ GameObject:
   - component: {fileID: 134273875352538528}
   - component: {fileID: 1839349095450152220}
   m_Layer: 0
-  m_Name: PreviewBlue
+  m_Name: PreviewOrange
   m_TagString: Portal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &134273875352538528
 Transform:
   m_ObjectHideFlags: 0

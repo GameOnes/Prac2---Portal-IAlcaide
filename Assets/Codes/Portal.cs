@@ -16,7 +16,9 @@ public class Portal : MonoBehaviour
     public LayerMask  m_ValidPortalLayerMask;
     public float m_MaxAnglePermitted = 5.0f;
 
-  
+    private bool m_IsValidPosition = false;
+
+
     public void LateUpdate()
     {
         Vector3 l_WorldPosition = Camera.main.transform.position; // esto es la posicion de la camara en coordenadas globales
@@ -59,6 +61,7 @@ public class Portal : MonoBehaviour
                         if(l_DotAngle<Mathf.Cos(m_MaxAnglePermitted * Mathf.Deg2Rad))
                         {
                             l_Valid = true;
+                            m_IsValidPosition = true;
                         }
                     }
                     else
@@ -71,7 +74,7 @@ public class Portal : MonoBehaviour
                   l_Valid = false;
         }
 
-        return l_Valid;
+        return l_Valid && m_IsValidPosition;
 
     }
 
