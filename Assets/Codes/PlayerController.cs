@@ -155,55 +155,69 @@ public class PlayerController : MonoBehaviour
         l_Movement.y = m_VerticalSpeed * Time.deltaTime;
 
         CollisionFlags l_CollisionFlags = m_CharacterController.Move(l_Movement);
-        if (m_VerticalSpeed < 0.0f && (l_CollisionFlags & CollisionFlags.Below) != 0) //si estoy cayendo y colisiono con el suelo
+        if (m_VerticalSpeed < 0.0f && (l_CollisionFlags & CollisionFlags.Below) != 0) 
         {
             m_VerticalSpeed = 0.0f;
             if (Input.GetKeyDown(m_JumpKeyCode))
                 m_VerticalSpeed = m_JumpSpeed;
         }
 
-        else if (m_VerticalSpeed > 0.0f && (l_CollisionFlags & CollisionFlags.Above) != 0) //si estoy subiendo y colision con un techo
+        else if (m_VerticalSpeed > 0.0f && (l_CollisionFlags & CollisionFlags.Above) != 0) 
             m_VerticalSpeed = 0.0f;
 
 
-        if ( Input.GetMouseButton(m_BlueShootMouseButton) && CanShoot() && !m_AttachingObject)
-        { 
-            if(m_PortalIsActive && m_BluePortal != null)
+        if (m_AttachedObject || m_AttachingObject)
+        {
+            if (Input.GetMouseButtonDown(0))
+                ThrowObject(m_ThrowForce);
+
+            if (Input.GetMouseButtonDown(1))
+                ThrowObject(0.0f);
+        }
+        else
+        {
+            if (Input.GetMouseButton(m_BlueShootMouseButton) && CanShoot())
             {
-                m_BluePortal.gameObject.SetActive(false);
-                m_PortalIsActive = false;
-                m_PortalMesh.material = m_Blue;
-              
+                SizePortal();
+                if (m_PortalIsActive && m_BluePortal != null)
+                {
+                    m_BluePortal.gameObject.SetActive(false);
+                    m_PortalIsActive = false;
+                    m_PortalMesh.material = m_Blue;
+
+                }
+                ShowDummyPortal(m_DummyPortal);
             }
-            ShowDummyPortal(m_DummyPortal);
+
+            if (Input.GetMouseButtonUp(m_BlueShootMouseButton))
+            {
+                m_DummyPortal.gameObject.SetActive(false);
+                Shoot(m_BluePortal);
+            }
+            if (Input.GetMouseButton(m_OrangeShootMouseButton) && CanShoot())
+            {
+
+                SizePortal();
+                if (m_PortalIsActive && m_BluePortal != null)
+                {
+                    m_OrangePortal.gameObject.SetActive(false);
+                    m_PortalIsActive = false;
+                    m_PortalMesh.material = m_Orange;
+
+                }
+                ShowDummyPortal(m_DummyPortal);
+            }
+
+            if (Input.GetMouseButtonUp(m_OrangeShootMouseButton))
+            {
+                m_DummyPortal.gameObject.SetActive(false);
+                Shoot(m_OrangePortal);
+            }
+
         }
 
-        if (Input.GetMouseButtonUp(m_BlueShootMouseButton) && !m_AttachingObject)
-        {
-            m_DummyPortal.gameObject.SetActive(false);
-            Shoot(m_BluePortal);
-        }
-        if(Input.GetMouseButton(m_OrangeShootMouseButton)&& CanShoot())
-        {
-            
-            
-            if (m_PortalIsActive && m_BluePortal != null && !m_AttachingObject)
-            {
-                m_OrangePortal.gameObject.SetActive(false);
-                m_PortalIsActive = false;
-                m_PortalMesh.material = m_Orange;
-                
-            }
-            ShowDummyPortal(m_DummyPortal);
-        }
-       
-        if (Input.GetMouseButtonUp(m_OrangeShootMouseButton) && !m_AttachingObject)
-        {
-            m_DummyPortal.gameObject.SetActive(false);
-            Shoot(m_OrangePortal);
-        }
-        
-            
+
+
         //m_Animation.Play(m_CantShootAnimationClip.name);
 
 
@@ -307,23 +321,20 @@ public class PlayerController : MonoBehaviour
     {
        
         Vector3 l_TpPosition = transform.position + m_MovementDirection * m_PortalDistance;
-        Vector3 l_LocalPosition = _portal.m_OtherPortalTransform.InverseTransformPoint(l_TpPosition); //convertimos la posicion del jugador al espacio local del portal de origen
+        Vector3 l_LocalPosition = _portal.m_OtherPortalTransform.InverseTransformPoint(l_TpPosition);
         Vector3 l_WorldPosition = _portal.m_MirrorPortal.transform.TransformPoint(l_LocalPosition);
 
-        Vector3 l_WorldCamForward = transform.forward; //direccion del jugador en el mundo
-        Vector3 l_LocalCamForward = _portal.m_OtherPortalTransform.InverseTransformDirection(l_WorldCamForward); //convertimos la direccion del jugador al espacio local del portal
+        Vector3 l_WorldCamForward = transform.forward; 
+        Vector3 l_LocalCamForward = _portal.m_OtherPortalTransform.InverseTransformDirection(l_WorldCamForward); 
         l_WorldCamForward = _portal.m_MirrorPortal.transform.TransformDirection(l_LocalCamForward);
-        //convertimos la direccion del jugador al espacio mundial del portal espejo ya que tenemos la posición transformada
-
-        //tenemos que transformarlo en quaternion para rotarlo
 
 
-        m_CharacterController.enabled = false; // deshabilitamos el character controller para evitar problemas al mover el objeto
+        m_CharacterController.enabled = false; 
         transform.position = l_WorldPosition;
         transform.rotation = Quaternion.LookRotation(l_WorldCamForward);
         transform.localScale = Vector3.one * (_portal.m_MirrorPortal.transform.localScale.x / _portal.transform.localScale.x) * transform.localScale.x;
         m_Yaw = transform.rotation.eulerAngles.y;
-        m_CharacterController.enabled = true; // habilitamos el character controller
+        m_CharacterController.enabled = true; 
 
     }
 
@@ -354,10 +365,7 @@ public class PlayerController : MonoBehaviour
             Ray l_Ray = m_Camera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0.0f));
             if(Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_ShootMaxDistance, m_ValidAttachObjectLayerMask.value))
             {
-                //if(l_RaycastHit.collider.CompareTag("Cube"))
-                //{
-                //    AttachObject(l_RaycastHit.rigidbody);
-                //}
+   
                 if((m_ValidAttachObjectLayerMask.value & (1 << l_RaycastHit.collider.gameObject.layer)) != 0) 
                 {
                         AttachObject(l_RaycastHit.rigidbody);
@@ -371,8 +379,6 @@ public class PlayerController : MonoBehaviour
         m_AttachingObject = true;
         m_AttachedObjectRb = _rb;
         m_AttachedObjectRb.GetComponent<CompanionCube>().SetAttachedObject(true);
-        m_AttachedObjectRb.GetComponent<RefrectualCube>().SetAttachedObject(true);
-        m_AttachedObjectRb.GetComponent<Turret>().SetAttachedObject(true);
         m_StartAttachingObjectPos =_rb.transform.position;
         m_AttachingCurrentTime = 0.0f;
         m_AttachedObject = false;
@@ -407,14 +413,13 @@ public class PlayerController : MonoBehaviour
     }
     void ThrowObject(float Force)
     {
+        
         m_AttachedObjectRb.isKinematic = false;
         m_AttachedObjectRb.AddForce(m_PitchController.forward*Force,m_ForceMode); 
         m_AttachedObjectRb.transform.SetParent(null);
         m_AttachingObject = false;
         m_AttachedObject = false;
         m_AttachedObjectRb.GetComponent<CompanionCube>().SetAttachedObject(false);
-        m_AttachedObjectRb.GetComponent<Turret>().SetAttachedObject(false);
-        m_AttachedObjectRb.GetComponent<RefrectualCube>().SetAttachedObject(false);
         m_AttachedObjectRb = null;
     }
 

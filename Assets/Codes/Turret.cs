@@ -1,4 +1,6 @@
 
+
+
 using UnityEngine;
 
 public class Turret : MonoBehaviour
@@ -6,8 +8,8 @@ public class Turret : MonoBehaviour
     [Header("Turret")]
 
     bool m_IsDead = false;
-    bool m_IsHeld = false;
-    public float m_MaxAlifeAngle = 15.0f;
+ 
+    public float m_MaxAlifeAngle = 45.0f;
     public float m_DeathForceThreshold = 5f;
     Rigidbody m_Rigidbody;
     bool m_AttachedObject = false;
@@ -16,7 +18,8 @@ public class Turret : MonoBehaviour
     public LineRenderer m_LineRenderer;
     public float m_MaxDistance = 50.0f;
     public LayerMask m_LayerMask;
-    bool m_IsReflecting = false;
+    bool m_ReflectingLaser = false;
+    bool m_PickingTurret = false;
 
     [Header("Teleport")]
     public float m_PortalDistance = 1.5f;
@@ -43,26 +46,33 @@ public class Turret : MonoBehaviour
     private void Update()
     {
         m_CurrentTeleportTime += Time.deltaTime;
-        UpdateLaser();
-        if (m_IsDead) return;
-        if (m_IsHeld)
+        if (m_IsDead)
         {
             if (m_LineRenderer.enabled)
                 m_LineRenderer.enabled = false;
             return;
         }
+
+        if (m_PickingTurret)
+        {
+            if (m_LineRenderer.enabled)
+                m_LineRenderer.enabled = false;
+            return;
+        }
+
+        UpdateLaser();
         float l_DotAngle = Vector3.Dot(transform.up, Vector3.up);
         if (l_DotAngle < Mathf.Cos(m_MaxAlifeAngle * Mathf.Deg2Rad))
         {
             DisableTurret();
             return;
         }
-
     }
 
     public void UpdateLaser()
     {
-        m_LineRenderer.gameObject.SetActive(true);
+        if (!m_LineRenderer.enabled)
+            m_LineRenderer.enabled = true;
         float l_Distance = m_MaxDistance;
         Ray l_Ray = new Ray(m_LineRenderer.transform.position, m_LineRenderer.transform.forward);
         if (Physics.Raycast(l_Ray, out RaycastHit l_RaycastHit, m_MaxDistance, m_LayerMask.value, QueryTriggerInteraction.Ignore))
@@ -70,13 +80,12 @@ public class Turret : MonoBehaviour
             l_Distance = l_RaycastHit.distance;
             if (l_RaycastHit.collider.CompareTag("RefractionCube"))
             {
-                l_RaycastHit.collider.GetComponent<RefrectualCube>().Reflect();
+                
             }
             if (l_RaycastHit.collider.CompareTag("Player"))
             {
-                Debug.Log("Hit Player");
-                PlayerController l_Player = l_RaycastHit.collider.GetComponentInParent<PlayerController>();
-                if (l_Player != null) { l_Player.Restart(); }
+                PlayerController l_Player = l_RaycastHit.collider.gameObject.GetComponentInParent<PlayerController>();
+                l_Player.Restart();
             }
             if (l_RaycastHit.collider.CompareTag("Turret"))
             {
@@ -87,7 +96,6 @@ public class Turret : MonoBehaviour
         Vector3 l_Position = new Vector3(0.0f, 0.0f, l_Distance);
         m_LineRenderer.SetPosition(1, l_Position);
     }
-
     public void DisableTurret()
     {
         if (m_IsDead) return;
@@ -95,59 +103,8 @@ public class Turret : MonoBehaviour
 
         if (m_LineRenderer != null)
             m_LineRenderer.enabled = false;
-
+        m_LineRenderer.gameObject.SetActive(false);
         m_Rigidbody.isKinematic = false;
         m_Rigidbody.useGravity = true;
-
-    }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (m_IsDead) return;
-
-        if (collision.gameObject.CompareTag("Cube") || collision.gameObject.CompareTag("Turret"))
-        {
-            if (collision.relativeVelocity.magnitude > m_DeathForceThreshold)
-            {
-                DisableTurret();
-            }
-        }
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.CompareTag("Portal"))
-        {
-            Portal l_Portal = other.GetComponent<Portal>();
-            if ((CanTeleport(l_Portal)))
-            {
-                Teleport(l_Portal);
-            }
-        }
-    }
-    bool CanTeleport(Portal _Portal)
-    {
-        float l_DotValue = Vector3.Dot(_Portal.transform.forward, m_Rigidbody.linearVelocity.normalized);
-        return !m_AttachedObject && l_DotValue > Mathf.Cos(m_MaxAngleToTeleport * Mathf.Deg2Rad) && m_CurrentTeleportTime > m_TeleportTime;
-    }
-    void Teleport(Portal l_Portal)
-    {
-        Vector3 l_TpPosition = transform.position + m_Rigidbody.linearVelocity.normalized * m_PortalDistance;
-        Vector3 l_LocalPosition = -l_Portal.m_OtherPortalTransform.InverseTransformPoint(l_TpPosition);
-        Vector3 l_WorldPosition = l_Portal.m_MirrorPortal.transform.TransformPoint(l_LocalPosition);
-        transform.position = l_Portal.m_MirrorPortal.transform.TransformPoint(l_LocalPosition);
-
-        Vector3 l_WorldDirection = transform.forward;
-        Vector3 l_LocalDirection = l_Portal.m_OtherPortalTransform.InverseTransformPoint(l_WorldDirection);
-        transform.forward = l_Portal.m_MirrorPortal.transform.TransformDirection(l_LocalDirection);
-
-        Vector3 l_localVelocity = l_Portal.m_OtherPortalTransform.InverseTransformDirection(m_Rigidbody.linearVelocity);
-        m_Rigidbody.linearVelocity = l_Portal.m_MirrorPortal.transform.TransformDirection(l_localVelocity);
-        m_CurrentTeleportTime = 0f;
-    }
-
-    public void SetAttachedObject(bool AttachedObject)
-    {
-        m_AttachedObject = AttachedObject;
     }
 }

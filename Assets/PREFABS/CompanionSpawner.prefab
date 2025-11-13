@@ -125,8 +125,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bf7989b975586148b48462bfabd7c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CompanionSpawner
-  m_companionCubePrefab: {fileID: 0}
+  m_companionCubePrefab: {fileID: 5062813648686299126, guid: cf89ae04f8ece4c4bb60cec9b719b7e3, type: 3}
   m_spawnTransform: {fileID: 3280025629473805118}
+  includeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_timeBetweenSpawns: 5
 --- !u!1 &2641013616231890415
 GameObject:
   m_ObjectHideFlags: 0

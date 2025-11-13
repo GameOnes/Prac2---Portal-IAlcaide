@@ -292,7 +292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0a19a4de7d289d4dbca1576114cc135, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Turret
-  m_MaxAlifeAngle: 15
+  m_MaxAlifeAngle: 45
   m_DeathForceThreshold: 5
   m_LineRenderer: {fileID: 1535363780602959431}
   m_MaxDistance: 50

@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1bf7989b975586148b48462bfabd7c51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CompanionSpawner
-  m_companionCubePrefab: {fileID: 0}
+  m_companionCubePrefab: {fileID: 5062813648686299126, guid: cf89ae04f8ece4c4bb60cec9b719b7e3, type: 3}
   m_spawnTransform: {fileID: 5241859994694466841}
   includeLayers:
     serializedVersion: 2
