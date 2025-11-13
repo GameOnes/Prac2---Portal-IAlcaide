@@ -43,7 +43,7 @@ public class PortalGate : MonoBehaviour
         m_State = TState.CLOSED;
         m_Animation.Play(m_ClosedAnimationClip.name);
     }
-    public void Open()
+    public void Opening()
     {
         if (m_State == TState.CLOSED)
         {
@@ -52,18 +52,18 @@ public class PortalGate : MonoBehaviour
             StartCoroutine(SetState(m_OpenAnimationClip.length,TState.OPENED));
         }
     }
-    public void Close()
+    public void Closing()
     {
-        if (m_State == TState.CLOSED)
-        {
-            m_State = TState.OPEN;
-            m_Animation.Play(m_OpenAnimationClip.name);
-            StartCoroutine(SetState(m_OpenAnimationClip.length, TState.OPENED));
-        }
+       if(m_State == TState.OPENED)
+       {
+            m_State = TState.CLOSE;
+            m_Animation.Play(m_CloseAnimationClip.name);
+            StartCoroutine(SetState(m_CloseAnimationClip.length, TState.CLOSED)); 
+       }
     }
     IEnumerator SetState(float AnimationTime,TState state)
     {
-        yield return new WaitForSeconds(AnimationTime); // yield returns control to the main loop and waits for the specified time
+        yield return new WaitForSeconds(AnimationTime); 
         m_State = state;
     }
 }

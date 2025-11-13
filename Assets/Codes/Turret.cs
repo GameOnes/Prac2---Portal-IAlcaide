@@ -1,6 +1,4 @@
 
-
-
 using UnityEngine;
 
 public class Turret : MonoBehaviour
@@ -80,7 +78,9 @@ public class Turret : MonoBehaviour
             l_Distance = l_RaycastHit.distance;
             if (l_RaycastHit.collider.CompareTag("RefractionCube"))
             {
-                
+                RefrectualCube l_RefrectualCube = l_RaycastHit.collider.GetComponent<RefrectualCube>();
+                l_RefrectualCube.Reflect();
+                m_ReflectingLaser = true;
             }
             if (l_RaycastHit.collider.CompareTag("Player"))
             {
@@ -104,6 +104,7 @@ public class Turret : MonoBehaviour
         if (m_LineRenderer != null)
             m_LineRenderer.enabled = false;
         m_LineRenderer.gameObject.SetActive(false);
+        m_ReflectingLaser = false;
         m_Rigidbody.isKinematic = false;
         m_Rigidbody.useGravity = true;
     }
