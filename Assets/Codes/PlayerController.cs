@@ -166,7 +166,7 @@ public class PlayerController : MonoBehaviour
             m_VerticalSpeed = 0.0f;
 
 
-        if ( Input.GetMouseButton(m_BlueShootMouseButton) && CanShoot())
+        if ( Input.GetMouseButton(m_BlueShootMouseButton) && CanShoot() && !m_AttachingObject)
         { 
             if(m_PortalIsActive && m_BluePortal != null)
             {
@@ -178,7 +178,7 @@ public class PlayerController : MonoBehaviour
             ShowDummyPortal(m_DummyPortal);
         }
 
-        if (Input.GetMouseButtonUp(m_BlueShootMouseButton))
+        if (Input.GetMouseButtonUp(m_BlueShootMouseButton) && !m_AttachingObject)
         {
             m_DummyPortal.gameObject.SetActive(false);
             Shoot(m_BluePortal);
@@ -187,7 +187,7 @@ public class PlayerController : MonoBehaviour
         {
             
             
-            if (m_PortalIsActive && m_BluePortal != null)
+            if (m_PortalIsActive && m_BluePortal != null && !m_AttachingObject)
             {
                 m_OrangePortal.gameObject.SetActive(false);
                 m_PortalIsActive = false;
@@ -197,7 +197,7 @@ public class PlayerController : MonoBehaviour
             ShowDummyPortal(m_DummyPortal);
         }
        
-        if (Input.GetMouseButtonUp(m_OrangeShootMouseButton))
+        if (Input.GetMouseButtonUp(m_OrangeShootMouseButton) && !m_AttachingObject)
         {
             m_DummyPortal.gameObject.SetActive(false);
             Shoot(m_OrangePortal);
@@ -371,6 +371,8 @@ public class PlayerController : MonoBehaviour
         m_AttachingObject = true;
         m_AttachedObjectRb = _rb;
         m_AttachedObjectRb.GetComponent<CompanionCube>().SetAttachedObject(true);
+        m_AttachedObjectRb.GetComponent<RefrectualCube>().SetAttachedObject(true);
+        m_AttachedObjectRb.GetComponent<Turret>().SetAttachedObject(true);
         m_StartAttachingObjectPos =_rb.transform.position;
         m_AttachingCurrentTime = 0.0f;
         m_AttachedObject = false;
@@ -411,6 +413,8 @@ public class PlayerController : MonoBehaviour
         m_AttachingObject = false;
         m_AttachedObject = false;
         m_AttachedObjectRb.GetComponent<CompanionCube>().SetAttachedObject(false);
+        m_AttachedObjectRb.GetComponent<Turret>().SetAttachedObject(false);
+        m_AttachedObjectRb.GetComponent<RefrectualCube>().SetAttachedObject(false);
         m_AttachedObjectRb = null;
     }
 

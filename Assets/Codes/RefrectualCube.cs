@@ -6,6 +6,8 @@ public class RefrectualCube : MonoBehaviour
     public float m_MaxDistance = 50.0f;
     public LayerMask m_LayerMask;
     bool m_IsReflectingLaser = false;
+    bool m_AttachedObject = false;
+
     private void Start()
     {
         m_LineRenderer.gameObject.SetActive(false);
@@ -44,5 +46,9 @@ public class RefrectualCube : MonoBehaviour
         }
         Vector3 l_Position = new Vector3(0.0f, 0.0f, l_Distance);
         m_LineRenderer.SetPosition(1, l_Position);
+    }
+    public void SetAttachedObject(bool AttachedObject)
+    {
+        m_AttachedObject = AttachedObject;
     }
 }
